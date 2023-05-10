@@ -1,10 +1,11 @@
-# Dictionary to map Hebrew facility names to English facility names
 HEBREW_TO_ENGLISH_FACILITIES = {
     'לא משנה מיקום': 'Any_place',
     'ראשי': 'Raashi',
     'מעצ': 'Maatz',
     'כורש': 'Koresh',
-    'רשות התאגידים': 'Yehidat_hataagidim',
+    'עררים': 'Ararim',
+    'אזרחית': 'Ezrachit',
+    'רשות התאגידים': 'Rashut_hataagidim',
     'אפכ ארצי': 'Apak_ertsi',
     'פטנטים': 'Patentim',
     'מלך דוד': 'Melech_david',
@@ -14,14 +15,13 @@ HEBREW_TO_ENGLISH_FACILITIES = {
     'סנגוריה': 'Sanagoria',
     'סיוע משפטי': 'Siyua_mishpati',
     'יחידת הסדר': 'Yechidat_haseder',
-    'אזרחית': 'Ezrachit',
-    'עררים': 'Ararim',
     'ועדת ערער': 'Vaadat_arar',
     'מחש': 'Machash',
     'מערכות מידע': 'Maarachot_meida',
     'רשם ירושות': 'Rasham_yerushot',
     'יחידות מקצועיות': 'Yechidot_miktsoiot',
 }
+# Dictionary to map Hebrew facility names to English facility names
 
 # Dictionary to map Hebrew shifts names to English shifts names
 HEBREW_TO_ENGLISH_SHIFTS = {
@@ -50,3 +50,16 @@ facilities_names = [
     'Siyua_mishpati', 'Yechidat_haseder', 'Ezrachit', 'Ararim', 'Vaadat_arar',
     'Machash', 'Maarachot_meida', 'Rasham_yerushot', 'Yechidot_miktsoiot',
 ]
+
+file_name = 'work.csv'
+
+raashi_morning = 7
+raashi_afternoon = 5
+raashi_night = 4
+raashi_small_shift = 3
+
+Maatz_morning = 3
+Maatz_small_shift = 2
+
+full_week = 7
+short_week = 5
