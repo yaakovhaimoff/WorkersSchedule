@@ -51,7 +51,7 @@ facilities_names = [
     'Machash', 'Maarachot_meida', 'Rasham_yerushot', 'Yechidot_miktsoiot',
 ]
 
-file_name = 'work.csv'
+file_name = '../../work.csv'
 
 raashi_morning = 7
 raashi_afternoon = 5

@@ -1,2 +1,7 @@
-/extras
+.gitignore
+ __pycache__/
 /venv
+.idea
+
+work.csv
+src/google-github

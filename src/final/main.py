@@ -8,6 +8,7 @@ def set_employee_shifts(file):
     # Load the CSV file into a pandas DataFrame
     df = pd.read_csv(file)
     employees = {}
+    print(df.values)
 
     # Iterate over the rows in the DataFrame
     for index, row in df.iterrows():
@@ -70,6 +71,10 @@ def set_facilities():
                         ['Afternoon'] * macros.full_week +
                         ['Night'] * macros.full_week]
 
+    half_day = [FacilityShift('', shift) for shift in
+                ['Morning'] * macros.short_week +
+                ['Afternoon'] * macros.short_week]
+
     raashi_days = {
         'Sunday': raashi_regular_day,
         'Monday': raashi_regular_day,
@@ -89,10 +94,6 @@ def set_facilities():
         'Friday': Maatz_weekend,
         'Saturday': Maatz_weekend,
     }
-
-    half_day = [FacilityShift('', shift) for shift in
-                ['Morning'] * macros.short_week +
-                ['Afternoon'] * macros.short_week]
 
     half_day_one_guy = {
         'Sunday': half_day,
@@ -126,8 +127,8 @@ def set_facilities():
         'Tuesday': [FacilityShift('', 'Double Morning')],
         'Wednesday': [FacilityShift('', 'Double Morning')],
         'Thursday': [FacilityShift('', 'Double Morning')],
-
     }
+
     # print_shifts(Maatz_days)
     return [
         Facility('Raashi', raashi_days),
@@ -170,11 +171,11 @@ if __name__ == '__main__':
     # initial employees data
     employees_data = set_employee_shifts(macros.file_name)
     # initial facilities
-    facilities = set_facilities()
-    for facility in facilities:
-        print(f"Facility: {facility.facility_name}")
-        for day, shifts in facility.days.items():
-            print(f"Day: {day}")
-            for shift in shifts:
-                print(f"Shift: {shift.shift_name}, Worker: {shift.worker}")
-        print()
+    # facilities = set_facilities()
+    # for facility in facilities:
+    #     print(f"Facility: {facility.facility_name}")
+    #     for day, shifts in facility.days.items():
+    #         print(f"Day: {day}")
+    #         for shift in shifts:
+    #             print(f"Shift: {shift.shift_name}, Worker: {shift.worker}")
+    #     print()
