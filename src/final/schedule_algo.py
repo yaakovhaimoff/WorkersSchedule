@@ -6,7 +6,7 @@ from absl import flags
 from ortools.sat.python import cp_model
 from google.protobuf import text_format
 
-import consts as c
+from src.consts import consts as c
 
 _OUTPUT_PROTO = flags.DEFINE_string(
     "output_proto", "", "Output file to write the cp_model proto to."

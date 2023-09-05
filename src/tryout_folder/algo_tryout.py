@@ -1,72 +1,14 @@
 from ortools.sat.python import cp_model
+import src.consts.consts as c
 
 
 def solve_shift_scheduling(requests):
-    # Data
-    num_employees = 4
-    num_weeks = 1
-    # shifts = ["O", "M", "A", "N"]
-    shifts = [ "M", "A", "N"]
-
-
-    # Shift constraints on continuous sequence :
-    #     (shift, hard_min, soft_min, min_penalty,
-    #             soft_max, hard_max, max_penalty)
-    shift_constraints = [
-        # One or two consecutive days of rest, this is a hard constraint.
-        (0, 1, 1, 0, 2, 2, 0),
-        # between 2 and 3 consecutive days of night shifts, 1 and 4 are
-        # possible but penalized.
-        # (3, 1, 2, 20, 3, 4, 5),
-        (2, 1, 2, 20, 3, 4, 5),
-    ]
-
-    # Weekly sum constraints on shifts days:
-    #     (shift, hard_min, soft_min, min_penalty,
-    #             soft_max, hard_max, max_penalty)
-    weekly_sum_constraints = [
-        # Constraints on rests per week.
-        (0, 1, 2, 7, 2, 3, 4),
-        # At least 1 night shift per week (penalized). At most 4 (hard).
-        # (3, 0, 1, 3, 4, 4, 0),
-        (2, 0, 1, 3, 4, 4, 0),
-    ]
-
-    # Penalized transitions:
-    #     (previous_shift, next_shift, penalty (0 means forbidden))
-    penalized_transitions = [
-        # Afternoon to night has a penalty of 4.
-        # (2, 3, 4),
-        (1, 2, 4),
-        # Night to morning is forbidden.
-        # (3, 1, 0),
-        (2, 0, 0),
-    ]
-
-    # daily demands for work shifts (morning, afternon, night) for each day
-    # of the week starting on Monday.
-    weekly_cover_demands = [
-        (1, 1, 1),  # Sunday
-        (1, 1, 1),  # Monday
-        (1, 1, 1),  # Tuesday
-        (1, 1, 1),  # Wednesday
-        (1, 1, 1),  # Thursday
-        (1, 1, 1),  # Friday
-        (1, 1, 1),  # Saturday
-    ]
-
-    # Penalty for exceeding the cover constraint per shift type.
-    excess_cover_penalties = (2, 2, 5)
-
-    num_days = num_weeks * 7
-    num_shifts = len(shifts)
-
     model = cp_model.CpModel()
 
     work = {}
-    for e in range(num_employees):
-        for s in range(num_shifts):
-            for d in range(num_days):
+    for e in range(c.num_employees):
+        for s in range(c.num_shifts):
+            for d in range(c.num_days):
                 work[e, s, d] = model.NewBoolVar("work%i_%i_%i" % (e, s, d))
 
     # Linear terms of the objective in a minimization context.
@@ -76,13 +18,9 @@ def solve_shift_scheduling(requests):
     obj_bool_coeffs = []
 
     # Exactly one shift per day.
-    for e in range(num_employees):
-        for d in range(num_days):
-            model.AddExactlyOne(work[e, s, d] for s in range(num_shifts))
-
-    # # Fixed assignments.
-    # for e, s, d in fixed_assignments:
-    #     model.Add(work[e, s, d] == 1)
+    for e in range(c.num_employees):
+        for d in range(c.num_days):
+            model.AddExactlyOne(work[e, s, d] for s in range(c.num_shifts))
 
     # Employee requests
     for e, s, d, w in requests:
@@ -92,16 +30,11 @@ def solve_shift_scheduling(requests):
             obj_bool_vars.append(work[e, s, d])
             obj_bool_coeffs.append(w)
 
-    # # Employee requests
-    # for e, s, d, w in requests:
-    #     obj_bool_vars.append(work[e, s, d])
-    #     obj_bool_coeffs.append(w)
-
     # Shift constraints
-    for ct in shift_constraints:
+    for ct in c.shift_constraints:
         shift, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost = ct
-        for e in range(num_employees):
-            works = [work[e, shift, d] for d in range(num_days)]
+        for e in range(c.num_employees):
+            works = [work[e, shift, d] for d in range(c.num_days)]
             variables, coeffs = add_soft_sequence_constraint(
                 model,
                 works,
@@ -117,10 +50,10 @@ def solve_shift_scheduling(requests):
             obj_bool_coeffs.extend(coeffs)
 
     # Weekly sum constraints
-    for ct in weekly_sum_constraints:
+    for ct in c.weekly_sum_constraints:
         shift, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost = ct
-        for e in range(num_employees):
-            for w in range(num_weeks):
+        for e in range(c.num_employees):
+            for w in range(c.num_weeks):
                 works = [work[e, shift, d + w * 7] for d in range(7)]
                 variables, coeffs = add_soft_sum_constraint(
                     model,
@@ -138,9 +71,9 @@ def solve_shift_scheduling(requests):
                 obj_int_coeffs.extend(coeffs)
 
     # Penalized transitions
-    for previous_shift, next_shift, cost in penalized_transitions:
-        for e in range(num_employees):
-            for d in range(num_days - 1):
+    for previous_shift, next_shift, cost in c.penalized_transitions:
+        for e in range(c.num_employees):
+            for d in range(c.num_days - 1):
                 transition = [
                     work[e, previous_shift, d].Not(),
                     work[e, next_shift, d + 1].Not(),
@@ -157,18 +90,18 @@ def solve_shift_scheduling(requests):
                     obj_bool_coeffs.append(cost)
 
     # Cover constraints
-    for s in range(1, num_shifts):
-        for w in range(num_weeks):
+    for s in range(1, c.num_shifts):
+        for w in range(c.num_weeks):
             for d in range(7):
-                works = [work[e, s, w * 7 + d] for e in range(num_employees)]
+                works = [work[e, s, w * 7 + d] for e in range(c.num_employees)]
                 # Ignore Off shift.
-                min_demand = weekly_cover_demands[d][s - 1]
-                worked = model.NewIntVar(min_demand, num_employees, "")
+                min_demand = c.weekly_cover_demands[d][s - 1]
+                worked = model.NewIntVar(min_demand, c.num_employees, "")
                 model.Add(worked == sum(works))
-                over_penalty = excess_cover_penalties[s - 1]
+                over_penalty = c.excess_cover_penalties[s - 1]
                 if over_penalty > 0:
                     name = "excess_demand(shift=%i, week=%i, day=%i)" % (s, w, d)
-                    excess = model.NewIntVar(0, num_employees - min_demand, name)
+                    excess = model.NewIntVar(0, c.num_employees - min_demand, name)
                     model.Add(excess == worked - min_demand)
                     obj_int_vars.append(excess)
                     obj_int_coeffs.append(over_penalty)
@@ -179,117 +112,18 @@ def solve_shift_scheduling(requests):
         + sum(obj_int_vars[i] * obj_int_coeffs[i] for i in range(len(obj_int_vars)))
     )
 
-    # if output_proto:
-    #     print("Writing proto to %s" % output_proto)
-    #     with open(output_proto, "w") as text_file:
-    #         text_file.write(str(model))
-
-
-    # Solve the model.
     solver = cp_model.CpSolver()
-    # if params:
-    #     text_format.Parse(params, solver.parameters)
     solution_printer = cp_model.ObjectiveSolutionPrinter()
     status = solver.Solve(model, solution_printer)
 
-    # Print solution.
-    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-        print()
-        header = "          "
-        for w in range(num_weeks):
-            header += "S M T W T F S "
-        print(header)
-        for e in range(num_employees):
-            schedule = ""
-            for d in range(num_days):
-                for s in range(num_shifts):
-                    if solver.BooleanValue(work[e, s, d]):
-                        schedule += shifts[s] + " "
-            print("worker %i: %s" % (e, schedule))
-        print()
-        print("Penalties:")
-        for i, var in enumerate(obj_bool_vars):
-            if solver.BooleanValue(var):
-                penalty = obj_bool_coeffs[i]
-                if penalty > 0:
-                    print("  %s violated, penalty=%i" % (var.Name(), penalty))
-                else:
-                    print("  %s fulfilled, gain=%i" % (var.Name(), -penalty))
-
-        for i, var in enumerate(obj_int_vars):
-            if solver.Value(var) > 0:
-                print(
-                    "  %s violated by %i, linear penalty=%i"
-                    % (var.Name(), solver.Value(var), obj_int_coeffs[i])
-                )
-
-    print()
-    print("Statistics")
-    print("  - status          : %s" % solver.StatusName(status))
-    print("  - conflicts       : %i" % solver.NumConflicts())
-    print("  - branches        : %i" % solver.NumBranches())
-    print("  - wall time       : %f s" % solver.WallTime())
-
-
-def negated_bounded_span(works, start, length):
-    """Filters an isolated sub-sequence of variables assined to True.
-
-    Extract the span of Boolean variables [start, start + length), negate them,
-    and if there is variables to the left/right of this span, surround the span by
-    them in non negated form.
-
-    Args:
-      works: a list of variables to extract the span from.
-      start: the start to the span.
-      length: the length of the span.
-
-    Returns:
-      a list of variables which conjunction will be false if the sub-list is
-      assigned to True, and correctly bounded by variables assigned to False,
-      or by the start or end of works.
-    """
-    sequence = []
-    # Left border (start of works, or works[start - 1])
-    if start > 0:
-        sequence.append(works[start - 1])
-    for i in range(length):
-        sequence.append(works[start + i].Not())
-    # Right border (end of works or works[start + length])
-    if start + length < len(works):
-        sequence.append(works[start + length])
-    return sequence
+    print_solution(solver, work, status)
+    print_penalties(solver, obj_bool_vars, obj_bool_coeffs, obj_int_vars, obj_int_coeffs)
+    print_stats(solver, status)
 
 
 def add_soft_sequence_constraint(
-    model, works, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost, prefix
+        model, works, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost, prefix
 ):
-    """Sequence constraint on true variables with soft and hard bounds.
-
-    This constraint look at every maximal contiguous sequence of variables
-    assigned to true. If forbids sequence of length < hard_min or > hard_max.
-    Then it creates penalty terms if the length is < soft_min or > soft_max.
-
-    Args:
-      model: the sequence constraint is built on this model.
-      works: a list of Boolean variables.
-      hard_min: any sequence of true variables must have a length of at least
-        hard_min.
-      soft_min: any sequence should have a length of at least soft_min, or a
-        linear penalty on the delta will be added to the objective.
-      min_cost: the coefficient of the linear penalty if the length is less than
-        soft_min.
-      soft_max: any sequence should have a length of at most soft_max, or a linear
-        penalty on the delta will be added to the objective.
-      hard_max: any sequence of true variables must have a length of at most
-        hard_max.
-      max_cost: the coefficient of the linear penalty if the length is more than
-        soft_max.
-      prefix: a base name for penalty literals.
-
-    Returns:
-      a tuple (variables_list, coefficient_list) containing the different
-      penalties created by the sequence constraint.
-    """
     cost_literals = []
     cost_coefficients = []
 
@@ -331,36 +165,22 @@ def add_soft_sequence_constraint(
     return cost_literals, cost_coefficients
 
 
+def negated_bounded_span(works, start, length):
+    sequence = []
+    # Left border (start of works, or works[start - 1])
+    if start > 0:
+        sequence.append(works[start - 1])
+    for i in range(length):
+        sequence.append(works[start + i].Not())
+    # Right border (end of works or works[start + length])
+    if start + length < len(works):
+        sequence.append(works[start + length])
+    return sequence
+
+
 def add_soft_sum_constraint(
-    model, works, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost, prefix
+        model, works, hard_min, soft_min, min_cost, soft_max, hard_max, max_cost, prefix
 ):
-    """Sum constraint with soft and hard bounds.
-
-    This constraint counts the variables assigned to true from works.
-    If forbids sum < hard_min or > hard_max.
-    Then it creates penalty terms if the sum is < soft_min or > soft_max.
-
-    Args:
-      model: the sequence constraint is built on this model.
-      works: a list of Boolean variables.
-      hard_min: any sequence of true variables must have a sum of at least
-        hard_min.
-      soft_min: any sequence should have a sum of at least soft_min, or a linear
-        penalty on the delta will be added to the objective.
-      min_cost: the coefficient of the linear penalty if the sum is less than
-        soft_min.
-      soft_max: any sequence should have a sum of at most soft_max, or a linear
-        penalty on the delta will be added to the objective.
-      hard_max: any sequence of true variables must have a sum of at most
-        hard_max.
-      max_cost: the coefficient of the linear penalty if the sum is more than
-        soft_max.
-      prefix: a base name for penalty variables.
-
-    Returns:
-      a tuple (variables_list, coefficient_list) containing the different
-      penalties created by the sequence constraint.
-    """
     cost_variables = []
     cost_coefficients = []
     sum_var = model.NewIntVar(hard_min, hard_max, "")
@@ -387,3 +207,48 @@ def add_soft_sum_constraint(
         cost_coefficients.append(max_cost)
 
     return cost_variables, cost_coefficients
+
+
+def print_solution(solver, work, status):
+    # Print solution.
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        print()
+        header = "          "
+        for w in range(c.num_weeks):
+            header += "S M T W T F S "
+        print(header)
+        for e in range(c.num_employees):
+            schedule = ""
+            for d in range(c.num_days):
+                for s in range(c.num_shifts):
+                    if solver.BooleanValue(work[e, s, d]):
+                        schedule += c.shifts[s] + " "
+            print("worker %i: %s" % (e, schedule))
+        print()
+
+
+def print_penalties(solver, obj_bool_vars, obj_bool_coeffs, obj_int_vars, obj_int_coeffs):
+    print("Penalties:")
+    for i, var in enumerate(obj_bool_vars):
+        if solver.BooleanValue(var):
+            penalty = obj_bool_coeffs[i]
+            if penalty > 0:
+                print("  %s violated, penalty=%i" % (var.Name(), penalty))
+            else:
+                print("  %s fulfilled, gain=%i" % (var.Name(), -penalty))
+
+    for i, var in enumerate(obj_int_vars):
+        if solver.Value(var) > 0:
+            print(
+                "  %s violated by %i, linear penalty=%i"
+                % (var.Name(), solver.Value(var), obj_int_coeffs[i])
+            )
+
+
+def print_stats(solver, status):
+    print()
+    print("Statistics")
+    print("  - status          : %s" % solver.StatusName(status))
+    print("  - conflicts       : %i" % solver.NumConflicts())
+    print("  - branches        : %i" % solver.NumBranches())
+    print("  - wall time       : %f s" % solver.WallTime())
