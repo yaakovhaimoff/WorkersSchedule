@@ -8,6 +8,9 @@ num_shifts = len(shifts)
 # num_total_shifts = len(shifts) * num_weeks * num_days
 num_total_shifts = len(shifts) * num_weeks * num_days
 
+want_to_work = -2
+doesnt_want_work = 4
+
 # Penalty for exceeding the cover constraint per shift type.
 excess_cover_penalties = (2, 2, 5)
 

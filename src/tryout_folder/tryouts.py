@@ -28,7 +28,7 @@ def set_requests():
     for employee_id, submissions in worker_submissions.items():
         for submission in submissions:
             day, shift_type = submission
-            requests.append((employee_id, c.shifts_in_nums.get(shift_type), c.days_in_nums.get(day), -2))
+            requests.append((employee_id, c.shifts_in_nums.get(shift_type), c.days_in_nums.get(day), c.want_to_work))
     return requests
 
 
@@ -42,7 +42,7 @@ def add_missing_shifts_to_requests(requests):
     for employee_id in worker_submissions:
         for shift in all_shifts:
             if shift not in worker_submissions[employee_id] and shift not in missing_shifts:
-                missing_shifts.append((employee_id, c.shifts_in_nums.get(shift[1]), c.days_of_week.index(shift[0]), 4))
+                missing_shifts.append((employee_id, c.shifts_in_nums.get(shift[1]), c.days_of_week.index(shift[0]), c.doesnt_want_work))
 
     # Add the missing shifts to the requests list
     requests.extend(missing_shifts)
