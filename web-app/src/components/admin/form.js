@@ -1,4 +1,4 @@
-import UploadFile from './UploadFile';
+import UploadFile from './uploadFile';
 import React, {useState} from 'react';
 
 function Form() {
@@ -28,8 +28,8 @@ function Form() {
 
     return (
         <form onSubmit={handleSubmit}>
-
-            <label class="form-label">Name:</label>
+            <h2>Work Schedule Form</h2>
+            <label className="form-label">Name:</label>
             <input
                 type="text"
                 name="username"
@@ -46,7 +46,7 @@ function Form() {
                 onChange={handleChange}
                 className="form-control"/>
 
-            <label class="form-label">Weeks:</label>
+            <label className="form-label">Weeks:</label>
             <input
                 type="number"
                 name="weeks"

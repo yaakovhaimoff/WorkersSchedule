@@ -33,7 +33,7 @@ class UploadFile extends Component {
 
         // Request made to the backend API
         // Send formData object
-        axios.post('api/uploadfile', formData);
+        axios.post('api/uploadFile', formData);
     };
 
     // File content to be displayed after
