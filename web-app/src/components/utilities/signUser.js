@@ -1,18 +1,18 @@
 import React, {useState} from "react";
 import {auth} from "../../appConfig";
 import {useNavigate} from 'react-router-dom';
-import Email from "./email";
-import Password from "./password";
+import Input from "./input";
+import handleInputChange from "./handleInputChange";
 
 const SignUser = ({signFunction, title, buttonMessage}) => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [inputs, setInputs] = useState({});
     const navigate = useNavigate();
 
 
     const signUp = (e) => {
         e.preventDefault();
-        signFunction(auth, email, password)
+        console.log(inputs.email);
+        signFunction(auth, inputs.email, inputs.password)
             .then((userCredential) => {
                 console.log(userCredential);
                 navigate('/workerSubmit');
@@ -21,6 +21,11 @@ const SignUser = ({signFunction, title, buttonMessage}) => {
                 console.log(error);
             });
     };
+
+    const handleChange = (event) => {
+        handleInputChange(event, inputs, setInputs);
+    };
+
 
     return (
         <div style={{
@@ -34,16 +39,31 @@ const SignUser = ({signFunction, title, buttonMessage}) => {
                                 <div className="mb-md-5 mt-md-4 pb-5">
                                     <h2 className="fw-bold mb-2 text-uppercase">{title}</h2>
                                     <form onSubmit={signUp}>
+                                        <div className="mb-3">
+                                            <Input
+                                                type="email"
+                                                name="email"
+                                                input={inputs.email}
+                                                handleChange={handleChange}
+                                                placeholder={"Enter your email"}/>
+                                        </div>
 
-                                        <Email email={email} setEmail={setEmail}/>
-                                        <Password password={password} setPassword={setPassword}/>
+                                        <div className="mb-3">
+                                            <Input
+                                                type="password"
+                                                name="password"
+                                                input={inputs.password}
+                                                handleChange={handleChange}
+                                                placeholder={"Enter your password"}/>
+                                        </div>
 
                                         <button className="btn btn-outline-light btn-lg px-5 rounded-pill"
                                                 type="submit">
                                             {buttonMessage}
                                         </button>
                                         <br/>
-                                        <p className="mb-0"> <a href="/forgotPassword" className="text-white-50 fw-bold">Forgotten password?</a>
+                                        <p className="mb-0"><a href="/forgotPassword" className="text-white-50 fw-bold">Forgotten
+                                            password?</a>
                                         </p>
                                     </form>
                                 </div>

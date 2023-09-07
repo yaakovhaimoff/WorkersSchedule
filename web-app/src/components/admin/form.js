@@ -1,71 +1,101 @@
 import UploadFile from './uploadFile';
 import React, {useState} from 'react';
+import Input from "../utilities/input";
+import handleInputChange from "../utilities/handleInputChange";
+import ShiftsDropdown from "./ShiftsDropdown";
 
 function Form() {
-    // all form inputs are stored in this state
     const [inputs, setInputs] = useState({});
+    const [selectedItems, setSelectedItems] = useState([]);
 
-    const [result, setResult] = useState('');
+    const items = [
+        { id: 1, label: "Morning" },
+        { id: 2, label: "Afternoon" },
+        { id: 3, label: "Night" },
+        { id: 4, label: "Long Morning" },
+        { id: 5, label: "Long Night" },
+    ];
 
-    /**
-     * Handle input change in the form. Note that the name of the input
-     * is used to determine which state to update but no hard-coding is
-     * required.
-     * @param event
-     */
+    const handleCheckboxChange = (item) => {
+        if (selectedItems.includes(item.id)) {
+            setSelectedItems(selectedItems.filter((id) => id !== item.id));
+        } else {
+            setSelectedItems([...selectedItems, item.id]);
+        }
+    };
+
     const handleChange = (event) => {
-        const name = event.target.name;
-        const value = event.target.value;
-        // the expression [name] is evaluated to the value of the variable name
-        // note that the square brackets [] do not denote an array!
-        setInputs(values => ({...values, [name]: value}))
-    }
+        handleInputChange(event, inputs, setInputs);
+    };
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        setResult(JSON.stringify(inputs)); // for demonstration purposes only
+
+        // Create an array of selected shift labels based on the selectedItems
+        const selectedShifts = items
+            .filter((item) => selectedItems.includes(item.id))
+            .map((item) => item.label);
+
+        // Combine the selected shifts into a string
+        const selectedShiftsString = selectedShifts.join(', ');
+
+        console.log("Form Submitted", inputs);
+        console.log(`Selected Shifts: ${selectedShiftsString}`);
+
+
+        setInputs({});
+        setSelectedItems([]);
     }
 
+
     return (
-        <form onSubmit={handleSubmit}>
-            <h2>Work Schedule Form</h2>
-            <label className="form-label">Name:</label>
-            <input
-                type="text"
-                name="username"
-                value={inputs.username || ""}
-                onChange={handleChange}
-                className="form-control"
-            />
+        <div className="container">
+            <form onSubmit={handleSubmit}>
+                <h2>Work Schedule Form</h2>
+                <label className="form-label">Name:</label>
+                <Input
+                    type="text"
+                    name="username"
+                    input={inputs.username}
+                    handleChange={handleChange}
+                    placeholder={""}/>
 
-            <label className="form-label">Email: </label>
-            <input
-                type="email"
-                name="email"
-                value={inputs.email || ""}
-                onChange={handleChange}
-                className="form-control"/>
+                <label className="form-label">Email: </label>
+                <Input
+                    type="email"
+                    name="email"
+                    input={inputs.email}
+                    handleChange={handleChange}
+                    placeholder={""}/>
 
-            <label className="form-label">Weeks:</label>
-            <input
-                type="number"
-                name="weeks"
-                value={inputs.weeks || ""}
-                onChange={handleChange}
-                className="form-control"/>
+                <label className="form-label">Weeks:</label>
+                <Input
+                    type="number"
+                    name="weeks"
+                    input={inputs.weeks}
+                    handleChange={handleChange}
+                    placeholder={""}/>
 
-            <label className="form-label">Message:</label>
-            <textarea
-                name="message"
-                type="text"
-                value={inputs.message || ""}
-                className="form-control"
-                onChange={handleChange}></textarea>
-            <UploadFile/>
+                <label className="form-label">Message:</label>
+                <textarea
+                    name="message"
+                    type="text"
+                    value={inputs.message || ""}
+                    className="form-control"
+                    onChange={handleChange}></textarea>
 
-            <button className="btn btn-primary m-3" type="submit">Submit</button>
-            {result ? <div className="border p-3">Result is {result}</div> : ""}
-        </form>
+                <label className="form-label">Shifts:</label>
+                <ShiftsDropdown
+                    items={items}
+                    selectedItems={selectedItems}
+                    handleCheckboxChange={handleCheckboxChange}
+                />
+
+                <button className="btn m-3" type="submit" style={{background: '#673ab7', color: 'white'}}>
+                    Submit
+                </button>
+            </form>
+        </div>
     )
 }
 

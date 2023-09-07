@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { auth } from '../../appConfig';
 
 function HomePage() {
@@ -7,6 +6,8 @@ function HomePage() {
         <>
             <h1>Welcome To The Home Page</h1>
             <button onClick={auth.signOut}>Sign Out</button>
+            <i className="bi bi-caret-right-fill"></i>
+            <i className="bi bi-caret-down-fill"></i>
         </>
     );
 }

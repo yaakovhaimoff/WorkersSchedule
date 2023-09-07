@@ -1,7 +1,18 @@
 import React from 'react';
 import SubmitCheckbox from './submitCheckbox';
+import CollapsedDayButton from "./collapsedDayButton";
 
-function SubmitForm({ days, places, shifts, formData, setFormData, handleCheckboxChange, handleSubmit, collapsedDays, toggleDay }) {
+function SubmitForm({
+                        days,
+                        places,
+                        shifts,
+                        formData,
+                        setFormData,
+                        handleCheckboxChange,
+                        handleSubmit,
+                        collapsedDays,
+                        toggleDay
+                    }) {
     const clearForm = () => {
         setFormData({});
     };
@@ -10,23 +21,12 @@ function SubmitForm({ days, places, shifts, formData, setFormData, handleCheckbo
         <form onSubmit={handleSubmit}>
             {days.map((day) => (
                 <div key={day}>
-                    <button
-                        className="btn"
-                        style={{
-                            backgroundColor: '#673ab7',
-                            width: '100%',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            color: 'white',
-                        }}
-                        type="button"
-                        data-toggle="collapse"
-                        data-target={`#collapse-${day}`}
-                        aria-expanded={!collapsedDays[day]}
-                        onClick={() => toggleDay(day)}
-                    >
-                        {day}
-                    </button>
+
+                    <CollapsedDayButton
+                        collapsedDays={collapsedDays}
+                        day={day}
+                        toggleDay={toggleDay}/>
+
                     <div className={`collapse multi-collapse ${collapsedDays[day] ? '' : 'show'}`}
                          id={`collapse-${day}`}>
                         <table className="table table-striped table-bordered rounded">
@@ -42,13 +42,14 @@ function SubmitForm({ days, places, shifts, formData, setFormData, handleCheckbo
                                             shifts={shifts}
                                             day={day}
                                             formData={formData}
-                                            handleCheckboxChange={handleCheckboxChange} />
+                                            handleCheckboxChange={handleCheckboxChange}/>
                         </table>
                     </div>
                     <br/>
                 </div>
             ))}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                 <button
                     className="btn"
                     style={{
@@ -71,7 +72,8 @@ function SubmitForm({ days, places, shifts, formData, setFormData, handleCheckbo
             </div>
             <p style={{
                 display: 'flex',
-                justifyContent: 'center',}}
+                justifyContent: 'center',
+            }}
             >{"Work Schedule"}</p>
         </form>
     );
