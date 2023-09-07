@@ -1,10 +1,31 @@
-import React, {useState} from 'react';
-import SubmitForm from "./submitForm";
+import React, {useState, useEffect} from 'react';
+import SubmitForm from './submitForm';
+import {useNavigate} from 'react-router-dom';
 
 function WorkerSubmit() {
     const [formData, setFormData] = useState({});
     const [collapsedDays, setCollapsedDays] = useState({});
     const [allCollapsed, setAllCollapsed] = useState(true);
+    const navigate = useNavigate();
+
+    // Retrieve 'days' and 'formData' from local storage on component mount
+    useEffect(() => {
+        const storedDays = localStorage.getItem('days');
+        if (storedDays) {
+            // Parse the stored data back to an array
+            const parsedDays = JSON.parse(storedDays);
+            // Set the parsed data as the 'days' state
+            setDays(parsedDays);
+        }
+
+        const storedFormData = localStorage.getItem('formData');
+        if (storedFormData) {
+            // Parse the stored data back to an object
+            const parsedFormData = JSON.parse(storedFormData);
+            // Set the parsed data as the 'formData' state
+            setFormData(parsedFormData);
+        }
+    }, []); // Empty dependency array means this effect runs once on component mount
 
     // Function to handle checkbox changes
     const handleCheckboxChange = (day, place, shift) => {
@@ -46,9 +67,13 @@ function WorkerSubmit() {
                 }
             }
         }
+        if (Object.keys(checkedCheckboxes).length) {
+            localStorage.setItem('checkedCheckboxes', JSON.stringify(checkedCheckboxes));
+            navigate('/formResponse');
+        }
         console.log('Checked Checkboxes:', checkedCheckboxes);
         setFormData({});
-    }
+    };
 
     // Function to toggle the collapse state of a day
     const toggleDay = (day) => {
@@ -69,33 +94,41 @@ function WorkerSubmit() {
     };
 
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const places = ['Place Doesn\'t Matter', '1', '2', '3', '4'];
-    const shifts = ['Shift Doesn\'t Matter', 'Morning', 'Afternoon', 'Night', 'Long Morning', 'Long Night'];
+    const places = ["Place Doesn't Matter", '1', '2', '3', '4'];
+    const shifts = ["Shift Doesn't Matter", 'Morning', 'Afternoon', 'Night', 'Long Morning', 'Long Night'];
 
     return (
-        <div style={{ backgroundColor: '#f2e6ff',
-            padding: '20px',
-            color: '#673ab7',
-            justifyContent: 'center',
-        }}>
-            <h1>Worker Submissions:</h1>
-            <button
-                className="btn"
-                style={{ backgroundColor: '#673ab7', color: 'white' }}
-                type="button"
-                onClick={toggleAll}
+        <div style={{backgroundColor: '#f2e6ff'}}>
+            <div
+                className={'container'}
+                style={{
+                    color: '#673ab7',
+                    justifyContent: 'center',
+                }}
             >
-                {allCollapsed ? 'Expand All' : 'Collapse All'}
-            </button>
-            <div>{"Press on day to submit its shifts."}</div>
+                <h1>Worker Submissions:</h1>
+                <button
+                    className="btn"
+                    style={{backgroundColor: '#673ab7', color: 'white'}}
+                    type="button"
+                    onClick={toggleAll}
+                >
+                    {allCollapsed ? 'Expand All' : 'Collapse All'}
+                </button>
+                <div>{"Click on day title unit to show or hide it."}</div>
 
-            <SubmitForm days={days} handleSubmit={handleSubmit} handleCheckboxChange={handleCheckboxChange}
-                        formData={formData}
-                        setFormData={setFormData}
-                        places={places}
-                        shifts={shifts}
-                        collapsedDays={collapsedDays}
-                        toggleDay={toggleDay} />
+                <SubmitForm
+                    days={days}
+                    handleSubmit={handleSubmit}
+                    handleCheckboxChange={handleCheckboxChange}
+                    formData={formData}
+                    setFormData={setFormData}
+                    places={places}
+                    shifts={shifts}
+                    collapsedDays={collapsedDays}
+                    toggleDay={toggleDay}
+                />
+            </div>
         </div>
     );
 }
