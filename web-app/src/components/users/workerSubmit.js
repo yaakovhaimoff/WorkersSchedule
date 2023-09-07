@@ -1,15 +1,15 @@
 import React, {useState} from 'react';
+import SubmitForm from "./submitForm";
 
 function WorkerSubmit() {
     const [formData, setFormData] = useState({});
+    const [collapsedDays, setCollapsedDays] = useState({});
+    const [allCollapsed, setAllCollapsed] = useState(true);
 
     // Function to handle checkbox changes
     const handleCheckboxChange = (day, place, shift) => {
         // Determine whether the checkbox is checked
         const isChecked = !formData?.[day]?.[place]?.[shift];
-
-        // Log the value to the console (for debugging purposes)
-        // console.log(`Checkbox for ${day}, Place: ${place}, Shift: ${shift} is checked: ${isChecked}`);
 
         // Update the formData object based on the checkbox state
         setFormData((prevData) => ({
@@ -26,7 +26,7 @@ function WorkerSubmit() {
 
     // Function to handle form submission
     const handleSubmit = (e) => {
-        e.preventDefault();
+        // e.preventDefault();
 
         // Filter and log only the checked checkboxes
         const checkedCheckboxes = {};
@@ -46,62 +46,56 @@ function WorkerSubmit() {
                 }
             }
         }
-
-        // Log the checked checkboxes to the console
         console.log('Checked Checkboxes:', checkedCheckboxes);
-
-        // Clear the formData for the next submission
         setFormData({});
+    }
+
+    // Function to toggle the collapse state of a day
+    const toggleDay = (day) => {
+        setCollapsedDays((prevState) => ({
+            ...prevState,
+            [day]: !prevState[day],
+        }));
     };
 
+    // Function to toggle the collapse state of all days
+    const toggleAll = () => {
+        const newCollapsedDays = {};
+        for (const day of days) {
+            newCollapsedDays[day] = !allCollapsed;
+        }
+        setCollapsedDays(newCollapsedDays);
+        setAllCollapsed(!allCollapsed);
+    };
 
-    // Define the list of days, places, and shifts
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const places = ['Doesn\'t Matter', '1', '2', '3', '4'];
-    const shifts = ['Doesn\'t Want', 'Morning', 'Afternoon', 'Night', 'Long Morning', 'Long Night'];
+    const places = ['Place Doesn\'t Matter', '1', '2', '3', '4'];
+    const shifts = ['Shift Doesn\'t Matter', 'Morning', 'Afternoon', 'Night', 'Long Morning', 'Long Night'];
 
     return (
-        <div style={{ backgroundColor: '#f2e6ff', padding: '20px' }}>
-        <h1>Worker Submissions:</h1>
-            <form onSubmit={handleSubmit}>
-                {days.map((day) => (
-                    <div key={day}>
-                        <br/>
-                        <h4>{day}</h4>
-                        <table className={"table table-striped table-bordered"}>
-                            <thead>
-                            <tr>
-                                <th></th>
-                                {shifts.map((shift) => (
-                                    <th key={shift}>{shift}</th>
-                                ))}
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {places.map((place) => (
-                                <tr key={place}>
-                                    <td>{place}</td>
-                                    {shifts.map((shift) => (
-                                        <td key={shift}>
-                                            <div className="form-check">
-                                                <input
-                                                    className="form-check-input"
-                                                    type="checkbox"
-                                                    id={`${day}-${place}-${shift}`}
-                                                    checked={formData?.[day]?.[place]?.[shift] || false}
-                                                    onChange={() => handleCheckboxChange(day, place, shift)}
-                                                />
-                                            </div>
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ))}
-                <button type="submit">Submit</button>
-            </form>
+        <div style={{ backgroundColor: '#f2e6ff',
+            padding: '20px',
+            color: '#673ab7',
+            justifyContent: 'center',
+        }}>
+            <h1>Worker Submissions:</h1>
+            <button
+                className="btn"
+                style={{ backgroundColor: '#673ab7', color: 'white' }}
+                type="button"
+                onClick={toggleAll}
+            >
+                {allCollapsed ? 'Expand All' : 'Collapse All'}
+            </button>
+            <div>{"Press on day to submit its shifts."}</div>
+
+            <SubmitForm days={days} handleSubmit={handleSubmit} handleCheckboxChange={handleCheckboxChange}
+                        formData={formData}
+                        setFormData={setFormData}
+                        places={places}
+                        shifts={shifts}
+                        collapsedDays={collapsedDays}
+                        toggleDay={toggleDay} />
         </div>
     );
 }
